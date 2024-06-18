@@ -1,30 +1,20 @@
 package config
 
 import (
-	"time"
-
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	MongoDBURI             string        `mapstructure: "MONGODBURI"`
-	RedisURI               string        `mapstructure: "REDISURI"`
-	Port                   string        `mapstructure: "PORT"`
-	GRPCServerAddress      string        `mapstructure: "GRPCSERVERADDRESS"`
-	AccessTokenPrivateKey  string        `mapstructure: "ACCESSTOKENPRIVATEKEY"`
-	AccessTokenPublicKey   string        `mapstructure: "ACCESSTOKENPUBLICKEY"`
-	RefreshTokenPrivateKey string        `mapstructure: "REFRESHTOKENPRIVATEKEY"`
-	RefreshTokenPublicKey  string        `mapstructure: "REFRESHTOKENPUBLICKEY"`
-	AccessTokenExpiresIn   time.Duration `mapstructure: "ACCESSTOKENEXPIRESIN"`
-	RefreshTokenExpiresIn  time.Duration `mapstructure: "REFRESHTOKENEXPIRESIN"`
-	AccessTokenMaxAge      int           `mapstructure: "ACCESSTOKENMAXAGE"`
-	RefreshTokenMaxAge     int           `mapstructure: "REFRESHTOKENMAXAGE"`
-	Origin                 string        `mapstructure: "ORIGIN"`
-	EmailFrom              string        `mapstructure: "EMAILFROM"`
-	SMTPHost               string        `mapstructure: "SMTPHOST"`
-	SMTPPass               string        `mapstructure: "SMTPPASS"`
-	SMTPPort               int           `mapstructure: "SMTPPORT"`
-	SMTPUser               string        `mapstructure: "SMTPUSER"`
+	MongoDBURI        string `mapstructure:"MONGODB_URI"`
+	RedisURI          string `mapstructure:"REDIS_URI"`
+	Port              string `mapstructure:"PORT"`
+	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
+	Origin            string `mapstructure:"ORIGIN"`
+	BucketRegion      string `mapstructure:"BUCKET_REGION"`
+	BucketEndpointURL string `mapstructure:"BUCKET_ENDPOINT_URL"`
+	BucketAccessKey   string `mapstructure:"BUCKET_ACCESS_KEY"`
+	BucketAccessID    string `mapstructure:"BUCKET_ACCESS_ID"`
+	BucketName        string `mapstructure:"BUCKET_NAME"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

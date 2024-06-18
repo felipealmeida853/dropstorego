@@ -4,12 +4,18 @@ import (
 	"context"
 	"dropstore/config"
 	"dropstore/controllers"
+	"dropstore/external"
+	"dropstore/repository"
 	"dropstore/routes"
-	"dropstore/services"
+	"dropstore/usecase"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -19,19 +25,12 @@ import (
 )
 
 var (
-	server      *gin.Engine
-	ctx         context.Context
-	mongoClient *mongo.Client
-	redisClient *redis.Client
-
-	userService         services.UserService
-	UserController      controllers.UserController
-	UserRouteController routes.UserRouteController
-
-	authCollection      *mongo.Collection
-	authService         services.AuthService
-	AuthController      controllers.AuthController
-	AuthRouteController routes.AuthRouteController
+	server              *gin.Engine
+	ctx                 context.Context
+	mongoClient         *mongo.Client
+	redisClient         *redis.Client
+	FileController      controllers.FileController
+	FileRouteController routes.FileRouteController
 )
 
 func init() {
@@ -71,14 +70,25 @@ func init() {
 
 	fmt.Println("Connected to Redis with success")
 
-	authCollection = mongoClient.Database("go").Collection("users")
-	userService = services.NewUserServiceImpl(authCollection, ctx)
-	authService = services.NewAuthService(authCollection, ctx)
-	AuthController = controllers.NewAuthController(authService, userService, ctx, authCollection)
-	AuthRouteController = routes.NewAuthRouteController(AuthController)
+	fileCollection := mongoClient.Database("go").Collection("files")
+	fileRepository := repository.NewFileRepository(ctx, fileCollection)
+	sess, err := session.NewSession(
+		&aws.Config{
+			Region:           aws.String(config.BucketRegion),
+			Credentials:      credentials.NewStaticCredentials(config.BucketAccessID, config.BucketAccessKey, ""),
+			Endpoint:         aws.String(config.BucketEndpointURL),
+			S3ForcePathStyle: aws.Bool(true),
+		})
+	if err != nil {
+		log.Fatal("Error creating session magalu object storage", err)
+	}
+	uploader := s3manager.NewUploader(sess)
+	//TODO: instantiate a downloader
 
-	UserController = controllers.NewUserController(userService)
-	UserRouteController = routes.NewRouteUserController(UserController)
+	fileStoreBucket := external.NewFileStoreBucketS3(ctx, uploader)
+	fileUseCase := usecase.NewFileUseCase(fileRepository, fileStoreBucket, &config)
+	FileController = controllers.NewFileController(ctx, fileUseCase)
+	FileRouteController = routes.NewFileRouteController(FileController)
 
 	server = gin.Default()
 
@@ -113,8 +123,7 @@ func startGinServer(config config.Config) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": value})
 	})
 
-	AuthRouteController.AuthRoute(router, userService)
-	UserRouteController.UserRoute(router, userService)
+	FileRouteController.FileRoute(router)
 
 	log.Fatal(server.Run(":" + config.Port))
 }
