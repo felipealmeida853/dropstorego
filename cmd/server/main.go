@@ -70,7 +70,7 @@ func init() {
 
 	fmt.Println("Connected to Redis with success")
 
-	fileCollection := mongoClient.Database("go").Collection("files")
+	fileCollection := mongoClient.Database("dropapi").Collection("files")
 	fileRepository := repository.NewFileRepository(ctx, fileCollection)
 	sess, err := session.NewSession(
 		&aws.Config{
