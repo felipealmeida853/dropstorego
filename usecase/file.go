@@ -22,9 +22,27 @@ func NewFileUseCase(repository repository.FileRepositoryInterface, fileStoreBuck
 	return &FileUseCase{repository, fileStoreBucket, config}
 }
 
-func (uc *FileUseCase) GetFile(input dto.FileUseCaseInputDTO) (dto.FileUseCaseOutputDTO, error) {
-	//TODO: Implement uc
-	var result dto.FileUseCaseOutputDTO
+func (uc *FileUseCase) GetFile(input dto.FileUseCaseGetInputDTO) (dto.FileUseCaseGetOutputDTO, error) {
+	var result dto.FileUseCaseGetOutputDTO
+
+	fileDB, err := uc.repository.GetByKey(dto.FileRepositoryKeyInputDTO{
+		Key: input.Key,
+	})
+
+	fileStoreDTO, err := uc.fileStoreBucket.Get(dto.FileStoreBucketInputDTO{
+		Filename: fileDB.Name,
+		Key:      input.Key,
+		Bucket:   fileDB.Bucket,
+	})
+	if err != nil {
+		fmt.Printf("Error getting file, err: %v", err)
+		return result, err
+	}
+
+	result.File = fileStoreDTO.File
+	result.User = fileDB.User
+	result.Name = fileDB.Name
+	result.Bucket = fileDB.Bucket
 	return result, nil
 }
 
@@ -38,10 +56,10 @@ func (uc *FileUseCase) SaveFile(input dto.FileUseCaseInputDTO) (dto.FileUseCaseO
 	}
 
 	resultSaveFileOnBucket, err := uc.fileStoreBucket.Save(dto.FileStoreBucketInputDTO{
-		Key:        key,
-		Path:       input.Path,
-		Filename:   input.Filename,
-		BucketName: uc.config.BucketName,
+		Key:      key,
+		Path:     input.Path,
+		Filename: input.Filename,
+		Bucket:   uc.config.BucketName,
 	})
 	if err != nil {
 		fmt.Printf("UC Error saving on bucket, filename: %v", input.Filename)

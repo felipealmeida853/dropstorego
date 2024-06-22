@@ -17,7 +17,7 @@ func NewFileRouteController(fileController controllers.FileController) FileRoute
 func (rc *FileRouteController) FileRoute(rg *gin.RouterGroup) {
 	router := rg.Group("/file")
 
-	router.GET("/retrieve", rc.fileController.GetFile)
+	router.GET("/retrieve/:key", rc.fileController.GetFile)
 	router.POST("/create", rc.fileController.PostFile)
 	router.DELETE("/delete", rc.fileController.DeleteFile)
 

@@ -23,20 +23,33 @@ func NewFileController(ctx context.Context, fileUseCase usecase.FileUseCaseInter
 }
 
 func (fc *FileController) GetFile(ctx *gin.Context) {
-	var inputFileDTO dto.FileUseCaseInputDTO
+	var inputFileDTO dto.FileUseCaseGetInputDTO
 
-	//TODO: Get parameter key bind in request or header
-
+	inputFileDTO.Key = ctx.Param("key")
 	outputFileDTO, err := fc.fileUseCase.GetFile(inputFileDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
-	fmt.Printf("OUTPUT %v", outputFileDTO)
 
-	//TODO: Return File to request
+	fileInfo, err := outputFileDTO.File.Stat()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get file info"})
+		return
+	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Get File"})
+	ctx.Writer.Header().Set("Content-Disposition", "attachment; filename="+fileInfo.Name())
+	ctx.Writer.Header().Set("Content-Type", "application/octet-stream")
+	ctx.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+
+	filePath := "./" + outputFileDTO.Name
+	http.ServeFile(ctx.Writer, ctx.Request, filePath)
+
+	err = os.Remove(filePath)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete file"})
+		return
+	}
 }
 
 func (fc *FileController) PostFile(ctx *gin.Context) {

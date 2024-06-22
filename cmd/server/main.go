@@ -82,10 +82,10 @@ func init() {
 	if err != nil {
 		log.Fatal("Error creating session magalu object storage", err)
 	}
-	uploader := s3manager.NewUploader(sess)
-	//TODO: instantiate a downloader
 
-	fileStoreBucket := external.NewFileStoreBucketS3(ctx, uploader)
+	uploader := s3manager.NewUploader(sess)
+	downloader := s3manager.NewDownloader(sess)
+	fileStoreBucket := external.NewFileStoreBucketS3(ctx, uploader, downloader)
 	fileUseCase := usecase.NewFileUseCase(fileRepository, fileStoreBucket, &config)
 	FileController = controllers.NewFileController(ctx, fileUseCase)
 	FileRouteController = routes.NewFileRouteController(FileController)
