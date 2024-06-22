@@ -42,10 +42,9 @@ func (fc *FileController) GetFile(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Content-Type", "application/octet-stream")
 	ctx.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 
-	filePath := "./" + outputFileDTO.Name
-	http.ServeFile(ctx.Writer, ctx.Request, filePath)
+	http.ServeFile(ctx.Writer, ctx.Request, outputFileDTO.FilePath)
 
-	err = os.Remove(filePath)
+	err = os.Remove(outputFileDTO.FilePath)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete file"})
 		return

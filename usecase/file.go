@@ -43,6 +43,7 @@ func (uc *FileUseCase) GetFile(input dto.FileUseCaseGetInputDTO) (dto.FileUseCas
 	result.User = fileDB.User
 	result.Name = fileDB.Name
 	result.Bucket = fileDB.Bucket
+	result.FilePath = fileStoreDTO.FilePath
 	return result, nil
 }
 

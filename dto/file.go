@@ -26,6 +26,7 @@ type FileUseCaseGetInputDTO struct {
 }
 
 type FileUseCaseGetOutputDTO struct {
+	FilePath  string    `json:"file_path" bson:"file_path"`
 	File      *os.File  `json:"file" bson:"file"`
 	Name      string    `json:"name" bson:"name"`
 	User      string    `json:"user" bson:"user"`
@@ -70,5 +71,6 @@ type FileStoreBucketInputDTO struct {
 type FileStoreBucketOutputDTO struct {
 	File     *os.File `json:"file" bson:"file"`
 	Filename string   `json:"filename" bson:"filename"`
+	FilePath string   `json:"file_path" bson:"file_path"`
 	Key      string   `json:"key" bson:"key"`
 }

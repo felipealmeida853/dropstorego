@@ -46,7 +46,8 @@ func (s *FileStoreBucketS3) Save(input dto.FileStoreBucketInputDTO) (dto.FileSto
 
 func (s *FileStoreBucketS3) Get(input dto.FileStoreBucketInputDTO) (dto.FileStoreBucketOutputDTO, error) {
 	var result dto.FileStoreBucketOutputDTO
-	file, err := os.Create("./" + input.Filename)
+	filePath := "./" + input.Filename
+	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Printf("Error creating file, err: %v", err)
 		return result, err
@@ -58,12 +59,13 @@ func (s *FileStoreBucketS3) Get(input dto.FileStoreBucketInputDTO) (dto.FileStor
 			Key:    aws.String(input.Key),
 		})
 	if err != nil {
-		fmt.Printf("Ërror downloading on bucket, err: %v", err)
+		fmt.Printf("Error downloading on bucket, err: %v", err)
 		return result, err
 	}
 	fmt.Printf("Number of bytes downloaded %d", numBytes)
 	result.Filename = file.Name()
 	result.File = file
+	result.FilePath = filePath
 	return result, nil
 }
 
