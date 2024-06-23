@@ -97,7 +97,31 @@ func (uc *FileUseCase) SaveFile(input dto.FileUseCaseInputDTO) (dto.FileUseCaseO
 	return result, nil
 }
 
-func (uc *FileUseCase) DeleteFile(input dto.FileUseCaseInputDTO) error {
-	//TODO: Implement uc
+func (uc *FileUseCase) DeleteFile(input dto.FileUseCaseDeleteInputDTO) error {
+	err := uc.repository.DeleteByKey(dto.FileRepositoryKeyInputDTO{
+		Key: input.Key,
+	})
+	if err != nil {
+		fmt.Printf("Error deleting from DB key: %s, err: %v", input.Key, err)
+		return err
+	}
+
+	err = uc.fileStoreBucket.Delete(dto.FileStoreBucketDeleteInputDTO{
+		Key:    input.Key,
+		Bucket: uc.config.BucketName,
+	})
+	if err != nil {
+		fmt.Printf("Error deleting from Storage key: %s, err: %v", input.Key, err)
+		return err
+	}
 	return nil
+}
+
+func (uc *FileUseCase) ListAll() ([]dto.FileRepositoryOutputDTO, error) {
+	result, err := uc.repository.ListAll()
+	if err != nil {
+		fmt.Printf("Error Listing all files from DB err: %v", err)
+		return nil, err
+	}
+	return result, err
 }

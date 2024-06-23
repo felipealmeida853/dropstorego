@@ -50,12 +50,30 @@ func (r *FileRepository) GetByKey(input dto.FileRepositoryKeyInputDTO) (dto.File
 }
 
 func (r *FileRepository) DeleteByKey(input dto.FileRepositoryKeyInputDTO) error {
-	//TODO: Implement repository
-	return nil
+	query := bson.M{"key": input.Key}
+	_, err := r.collection.DeleteOne(r.ctx, query)
+	if err != nil {
+		fmt.Printf("Error deleting file in DB, error: %v", err)
+	}
+	return err
 }
 
 func (r *FileRepository) ListAll() ([]dto.FileRepositoryOutputDTO, error) {
-	var results []dto.FileRepositoryOutputDTO
-	//TODO: Implement repository
-	return results, nil
+	var files []dto.FileRepositoryOutputDTO
+	query := bson.M{}
+	cur, err := r.collection.Find(r.ctx, query)
+	if err != nil {
+		fmt.Printf("Error listing file in DB, error: %v", err)
+		return nil, err
+	}
+	for cur.Next(r.ctx) {
+		var file dto.FileRepositoryOutputDTO
+		err = cur.Decode(&file)
+		if err != nil {
+			fmt.Printf("Error decoding file from db, err %v", err)
+			continue
+		}
+		files = append(files, file)
+	}
+	return files, nil
 }

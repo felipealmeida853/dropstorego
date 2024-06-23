@@ -51,6 +51,16 @@ func (fc *FileController) GetFile(ctx *gin.Context) {
 	}
 }
 
+func (fc *FileController) ListAllFiles(ctx *gin.Context) {
+	outputFilesDTO, err := fc.fileUseCase.ListAll()
+	fmt.Printf("files %v", outputFilesDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": outputFilesDTO})
+}
+
 func (fc *FileController) PostFile(ctx *gin.Context) {
 	file, header, err := ctx.Request.FormFile("file")
 	pathTempFile := "./" + header.Filename
@@ -81,17 +91,13 @@ func (fc *FileController) PostFile(ctx *gin.Context) {
 }
 
 func (fc *FileController) DeleteFile(ctx *gin.Context) {
-	var inputFileDTO dto.FileUseCaseInputDTO
+	var inputFileDTO dto.FileUseCaseDeleteInputDTO
 
-	//TODO: Get parameter key bind in request or header
-
+	inputFileDTO.Key = ctx.Param("key")
 	err := fc.fileUseCase.DeleteFile(inputFileDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
-
-	//TODO: Return File to request
-
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "message": "Get File"})
+	ctx.JSON(http.StatusNoContent, gin.H{"status": "success", "message": "File deleted with success"})
 }

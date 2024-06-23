@@ -15,10 +15,11 @@ type FileStoreBucketS3 struct {
 	ctx        context.Context
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
+	svc        *s3.S3
 }
 
-func NewFileStoreBucketS3(ctx context.Context, uploader *s3manager.Uploader, downloader *s3manager.Downloader) *FileStoreBucketS3 {
-	return &FileStoreBucketS3{ctx, uploader, downloader}
+func NewFileStoreBucketS3(ctx context.Context, uploader *s3manager.Uploader, downloader *s3manager.Downloader, svc *s3.S3) *FileStoreBucketS3 {
+	return &FileStoreBucketS3{ctx, uploader, downloader, svc}
 }
 
 func (s *FileStoreBucketS3) Save(input dto.FileStoreBucketInputDTO) (dto.FileStoreBucketOutputDTO, error) {
@@ -69,7 +70,14 @@ func (s *FileStoreBucketS3) Get(input dto.FileStoreBucketInputDTO) (dto.FileStor
 	return result, nil
 }
 
-func (s *FileStoreBucketS3) Delete() error {
-	//TODO: Implement external s3
+func (s *FileStoreBucketS3) Delete(input dto.FileStoreBucketDeleteInputDTO) error {
+	_, err := s.svc.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(input.Bucket),
+		Key:    aws.String(input.Key),
+	})
+	if err != nil {
+		fmt.Printf("Error deleting file key: %s,  err: %v", input.Key, err)
+		return err
+	}
 	return nil
 }

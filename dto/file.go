@@ -5,8 +5,13 @@ import (
 	"time"
 )
 
+type FileUseCaseDeleteInputDTO struct {
+	Key string `json:"key" bson:"key"`
+}
+
 type FileUseCaseInputDTO struct {
 	Path     string `json:"path" bson:"path"`
+	Key      string `json:"key" bson:"key"`
 	Filename string `json:"filename" bson:"filename"`
 	User     string `json:"user" bson:"user"`
 }
@@ -73,4 +78,9 @@ type FileStoreBucketOutputDTO struct {
 	Filename string   `json:"filename" bson:"filename"`
 	FilePath string   `json:"file_path" bson:"file_path"`
 	Key      string   `json:"key" bson:"key"`
+}
+
+type FileStoreBucketDeleteInputDTO struct {
+	Key    string `json:"key" bson:"key"`
+	Bucket string `json:"bucket_name" bson:"bucket_name"`
 }

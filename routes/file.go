@@ -18,7 +18,8 @@ func (rc *FileRouteController) FileRoute(rg *gin.RouterGroup) {
 	router := rg.Group("/file")
 
 	router.GET("/retrieve/:key", rc.fileController.GetFile)
+	router.GET("/list/all", rc.fileController.ListAllFiles)
 	router.POST("/create", rc.fileController.PostFile)
-	router.DELETE("/delete", rc.fileController.DeleteFile)
+	router.DELETE("/delete/:key", rc.fileController.DeleteFile)
 
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -83,9 +84,11 @@ func init() {
 		log.Fatal("Error creating session magalu object storage", err)
 	}
 
+	svc := s3.New(sess)
 	uploader := s3manager.NewUploader(sess)
 	downloader := s3manager.NewDownloader(sess)
-	fileStoreBucket := external.NewFileStoreBucketS3(ctx, uploader, downloader)
+
+	fileStoreBucket := external.NewFileStoreBucketS3(ctx, uploader, downloader, svc)
 	fileUseCase := usecase.NewFileUseCase(fileRepository, fileStoreBucket, &config)
 	FileController = controllers.NewFileController(ctx, fileUseCase)
 	FileRouteController = routes.NewFileRouteController(FileController)
