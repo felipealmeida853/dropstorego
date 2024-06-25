@@ -58,9 +58,9 @@ func (r *FileRepository) DeleteByKey(input dto.FileRepositoryKeyInputDTO) error 
 	return err
 }
 
-func (r *FileRepository) ListAll() ([]dto.FileRepositoryOutputDTO, error) {
+func (r *FileRepository) ListAll(input dto.FileRepositoryListAllInputDTO) ([]dto.FileRepositoryOutputDTO, error) {
 	var files []dto.FileRepositoryOutputDTO
-	query := bson.M{}
+	query := bson.M{"folder_uuid": input.FolderUUID}
 	cur, err := r.collection.Find(r.ctx, query)
 	if err != nil {
 		fmt.Printf("Error listing file in DB, error: %v", err)

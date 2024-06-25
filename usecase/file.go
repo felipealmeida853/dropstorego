@@ -73,13 +73,14 @@ func (uc *FileUseCase) SaveFile(input dto.FileUseCaseInputDTO) (dto.FileUseCaseO
 	}
 
 	insertDB, err := uc.repository.Save(dto.FileRepositoryInputDTO{
-		Name:      input.Filename,
-		User:      input.User,
-		Key:       key,
-		CreatedAt: time.Now(),
-		Bucket:    uc.config.BucketName,
-		SizeInMB:  fileInfo.Size() / (1 << 20),
-		Size:      fileInfo.Size(),
+		Name:       input.Filename,
+		User:       input.User,
+		Key:        key,
+		CreatedAt:  time.Now(),
+		Bucket:     uc.config.BucketName,
+		SizeInMB:   fileInfo.Size() / (1 << 20),
+		Size:       fileInfo.Size(),
+		FolderUUID: input.FolderUUID,
 	})
 	if err != nil {
 		fmt.Printf("UC Error saving on DB, filename: %v", input.Filename)
@@ -93,6 +94,7 @@ func (uc *FileUseCase) SaveFile(input dto.FileUseCaseInputDTO) (dto.FileUseCaseO
 	result.Key = insertDB.Key
 	result.SizeInMB = insertDB.SizeInMB
 	result.SizeInMB = insertDB.Size
+	result.FolderUUID = insertDB.FolderUUID
 
 	return result, nil
 }
@@ -117,8 +119,10 @@ func (uc *FileUseCase) DeleteFile(input dto.FileUseCaseDeleteInputDTO) error {
 	return nil
 }
 
-func (uc *FileUseCase) ListAll() ([]dto.FileRepositoryOutputDTO, error) {
-	result, err := uc.repository.ListAll()
+func (uc *FileUseCase) ListAll(input dto.FileUseCaseListAllInputDTO) ([]dto.FileRepositoryOutputDTO, error) {
+	result, err := uc.repository.ListAll(dto.FileRepositoryListAllInputDTO{
+		FolderUUID: input.FolderUUID,
+	})
 	if err != nil {
 		fmt.Printf("Error Listing all files from DB err: %v", err)
 		return nil, err

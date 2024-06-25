@@ -52,13 +52,14 @@ func (fc *FileController) GetFile(ctx *gin.Context) {
 }
 
 func (fc *FileController) ListAllFiles(ctx *gin.Context) {
-	outputFilesDTO, err := fc.fileUseCase.ListAll()
-	fmt.Printf("files %v", outputFilesDTO)
+	outputFilesDTO, err := fc.fileUseCase.ListAll(dto.FileUseCaseListAllInputDTO{
+		FolderUUID: ctx.Param("folder_uuid"),
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": outputFilesDTO})
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": outputFilesDTO})
 }
 
 func (fc *FileController) PostFile(ctx *gin.Context) {
@@ -78,9 +79,10 @@ func (fc *FileController) PostFile(ctx *gin.Context) {
 	out.Close()
 
 	outputFileDTO, err := fc.fileUseCase.SaveFile(dto.FileUseCaseInputDTO{
-		Path:     pathTempFile,
-		Filename: header.Filename,
-		User:     ctx.Request.Header.Get("user_uuid"),
+		Path:       pathTempFile,
+		Filename:   header.Filename,
+		User:       ctx.Request.Header.Get("user_uuid"),
+		FolderUUID: ctx.Param("folder_uuid"),
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": err.Error()})

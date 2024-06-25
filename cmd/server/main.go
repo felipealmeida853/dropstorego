@@ -26,12 +26,14 @@ import (
 )
 
 var (
-	server              *gin.Engine
-	ctx                 context.Context
-	mongoClient         *mongo.Client
-	redisClient         *redis.Client
-	FileController      controllers.FileController
-	FileRouteController routes.FileRouteController
+	server                *gin.Engine
+	ctx                   context.Context
+	mongoClient           *mongo.Client
+	redisClient           *redis.Client
+	FileController        controllers.FileController
+	FileRouteController   routes.FileRouteController
+	FolderController      controllers.FolderController
+	FolderRouteController routes.FolderRouteController
 )
 
 func init() {
@@ -93,6 +95,12 @@ func init() {
 	FileController = controllers.NewFileController(ctx, fileUseCase)
 	FileRouteController = routes.NewFileRouteController(FileController)
 
+	folderCollection := mongoClient.Database("dropapi").Collection("folders")
+	folderRepository := repository.NewFolderRepository(ctx, folderCollection)
+	folderUseCase := usecase.NewFolderUseCase(folderRepository)
+	FolderController = controllers.NewFolderController(ctx, folderUseCase)
+	FolderRouteController = routes.NewFolderRouteController(FolderController)
+
 	server = gin.Default()
 
 }
@@ -127,6 +135,7 @@ func startGinServer(config config.Config) {
 	})
 
 	FileRouteController.FileRoute(router)
+	FolderRouteController.FolderRoute(router)
 
 	log.Fatal(server.Run(":" + config.Port))
 }
